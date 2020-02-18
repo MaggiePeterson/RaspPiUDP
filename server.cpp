@@ -1,45 +1,57 @@
-#include <sys/socket.h>
+#include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
+#include <string.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <arpa/inet.h>
 #include <netinet/in.h>
-#include <thread>
-#include <time.h>
-#include <iostream>
 
-#define PORT 5801
-#define BUFFER_SIZE 1*800*600
-using namespace std;
+#define PORT     8080
+#define MAXLINE 1024
 
-
+// Driver code
 int main() {
+    int sockfd;
+    char buffer[MAXLINE];
+    char *hello = "Hello from server";
+    struct sockaddr_in servaddr, cliaddr;
 
-    int sock;                         /* Socket */
-    struct sockaddr_in broadcastAddr; /* Broadcast address */
-    int broadcastPermission = 1;          /* Socket opt to set permission to broadcast */
-
-    if ((sock = socket(PF_INET, SOCK_DGRAM, IPPROTO_UDP)) < 0)
-    {
-        perror("UDP socket failed");
-        exit(EXIT_FAILURE);
-    }
-    if (setsockopt(sock, SOL_SOCKET, SO_BROADCAST, (void *) &broadcastPermission, sizeof(broadcastPermission)) < 0)
-    {
-        perror("Could not set UDP permissions");
+    // Creating socket file descriptor
+    if ( (sockfd = socket(AF_INET, SOCK_DGRAM, 0)) < 0 ) {
+        perror("socket creation failed");
         exit(EXIT_FAILURE);
     }
 
-    memset(&broadcastAddr, 0, sizeof(broadcastAddr));   /* Zero out structure */
-    broadcastAddr.sin_family = AF_INET;                 /* Internet address family */
-    broadcastAddr.sin_addr.s_addr = INADDR_BROADCAST;   /* Broadcast IP address */
-    broadcastAddr.sin_port = htons(PORT);               /* Broadcast port */
-    std::cout<<"Starting beacon"<<std::endl;
+    memset(&servaddr, 0, sizeof(servaddr));
+    memset(&cliaddr, 0, sizeof(cliaddr));
 
-    
-    string data = "maggie :3";
-    
-    while(1){
+    // Filling server information
+    servaddr.sin_family    = AF_INET; // IPv4
+    servaddr.sin_addr.s_addr = INADDR_ANY;
+    servaddr.sin_port = htons(PORT);
 
-         sendto(sock, data.c_str(), data.length(), 0, (struct sockaddr *)&broadcastAddr, sizeof(broadcastAddr));
-
-
+    // Bind the socket with the server address
+    if ( bind(sockfd, (const struct sockaddr *)&servaddr,
+            sizeof(servaddr)) < 0 )
+    {
+        perror("bind failed");
+        exit(EXIT_FAILURE);
     }
-}
+
+    int len, n;
+
+    len = sizeof(cliaddr);  //len is value/resuslt
+
+    n = recvfrom(sockfd, (char *)buffer, MAXLINE,
+                MSG_WAITALL, ( struct sockaddr *) &cliaddr,
+                &len);
+    buffer[n] = '\0';
+    printf("Client : %s\n", buffer);
+    sendto(sockfd, (const char *)hello, strlen(hello),
+        MSG_CONFIRM, (const struct sockaddr *) &cliaddr,
+            len);
+    printf("Hello message sent.\n");
+
+    return 0;
+} 
