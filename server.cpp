@@ -4,6 +4,7 @@
 #include <thread>
 #include <time.h>
 #include <iostream>
+#include <string.h>
 
 #define PORT 5801
 #define BUFFER_SIZE 1*800*600

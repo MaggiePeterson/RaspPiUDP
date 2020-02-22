@@ -49,5 +49,6 @@ int main(){
         memset(&bCastRecv, '0', sizeof(bCastRecv));
         currPacket = recvfrom(bCastSock, buffer, MAX_BUFF, 0, (struct sockaddr *) &bCastRecv, &addrlen);
         cout<<"Packet: "<<currPacket<<endl;
+       
     } while(currPacket != -1);
 }
