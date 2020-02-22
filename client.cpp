@@ -21,7 +21,7 @@ int main(){
     socklen_t addrlen = sizeof(struct sockaddr_in);
     char  *buffHolder;
     char *hostIpString;
-    const int bCastPort = 9999;
+    const int bCastPort = 5801;
     char buffer[MAX_BUFF] = {0};
     ssize_t currPacket;
     struct sockaddr_in serv_addr;
